@@ -104,6 +104,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// create controller for CloudManagedAlert resource
+	if err = (&controllers.CloudManagedAlertReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controller-alert").WithName("CloudManagedAlert"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create alert controller",
+			"controller-alert", "CloudManagedAlert")
+		os.Exit(1)
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
