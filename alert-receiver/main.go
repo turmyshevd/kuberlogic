@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -10,6 +11,8 @@ import (
 
 func enforceJSONHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Incoming request received!")
+
 		contentType := r.Header.Get("Content-Type")
 
 		if contentType != "" {
@@ -38,18 +41,23 @@ func processAlertmanagerWebhook(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Raw body: %s\n", string(b))
 
-	alertData := &AlertWebhook{}
-	if err := json.Unmarshal(b, &alertData); err != nil {
+	alert := &AlertWebhook{}
+	if err := json.Unmarshal(b, &alert); err != nil {
 		log.Fatal("Error unmarshalling Alertmanager webhook data!")
 	}
 
-	switch alertData.Status {
+	switch alert.Status {
 	case "resolved":
-		// TODO: process resolved alerts
+		err = alert.resolve()
 	case "firing":
-		// TODO: process active alerts
+		err = alert.create()
 	default:
-		log.Fatalf("Unknown alert status: %s", alertData.Status)
+		log.Fatalf("Unknown alert status: %s", alert.Status)
+	}
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(fmt.Sprintf("Unexpected error during %s alert processing", alert.getName())))
 	}
 }
 
