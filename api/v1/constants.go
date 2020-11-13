@@ -12,4 +12,9 @@ const (
 	BackupSuccessStatus = "Success"
 	BackupFailedStatus  = "Failed"
 	BackupUnknownStatus = ""
+
+	// alert status
+	AlertCreatedStatus  = "Created"
+	AlertAckedStatus    = "Acknowledged"
+	AlertResolvedStatus = "Resolved"
 )

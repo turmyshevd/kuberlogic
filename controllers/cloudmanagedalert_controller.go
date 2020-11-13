@@ -44,6 +44,23 @@ func (r *CloudManagedAlertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, err
 	}
 
+	// trigger alert processing
+	processFunc := cloudmanagedAlert.Process()
+
+	// update status if needed. This will trigger reconcilation loop one more time.
+	newStatus := processFunc()
+	if !cloudmanagedAlert.IsEqual(newStatus) {
+		cloudmanagedAlert.SetStatus(newStatus)
+
+		err := r.Update(ctx, cloudmanagedAlert)
+		if err != nil {
+			log.Error(err, "Failed to update alert status")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("Alert status is updated", "Status", cloudmanagedAlert.Status.Status)
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 
