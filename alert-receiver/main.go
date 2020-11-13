@@ -46,13 +46,15 @@ func processAlertmanagerWebhook(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error unmarshalling Alertmanager webhook data!")
 	}
 
-	switch alert.Status {
-	case "resolved":
-		err = alert.resolve()
-	case "firing":
-		err = alert.create()
-	default:
-		log.Fatalf("Unknown alert status: %s", alert.Status)
+	for _, a := range alert.Alerts {
+		switch a.Status {
+		case "resolved":
+			err = a.resolve()
+		case "firing":
+			err = a.create()
+		default:
+			log.Fatalf("Unknown alert status: %s", alert.Status)
+		}
 	}
 
 	if err != nil {
