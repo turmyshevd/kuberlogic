@@ -5,7 +5,7 @@ import (
 	"gitlab.com/cloudmanaged/operator/api/v1/operator"
 )
 
-func GetClusterPodLabels() (cm *cloudlinuxv1.CloudManaged, master map[string]string, replica map[string]string, err error) {
+func GetClusterPodLabels(cm *cloudlinuxv1.CloudManaged) (master map[string]string, replica map[string]string, err error) {
 	op, err := operator.GetOperator(cm.Spec.Type)
 	if err != nil {
 		return
@@ -15,7 +15,7 @@ func GetClusterPodLabels() (cm *cloudlinuxv1.CloudManaged, master map[string]str
 	return
 }
 
-func GetClusterServices() (cm *cloudlinuxv1.CloudManaged, master string, replica string, err error) {
+func GetClusterServices(cm *cloudlinuxv1.CloudManaged) (master string, replica string, err error) {
 	op, err := operator.GetOperator(cm.Spec.Type)
 	if err != nil {
 		return
