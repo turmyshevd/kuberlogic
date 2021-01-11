@@ -13,6 +13,15 @@ import (
 const (
 	image   = "postgresql"
 	version = "12.1.5"
+
+	postgresRoleKey     = "spilo-role"
+	postgresRoleReplica = "replica"
+	postgresRoleMaster  = "master"
+
+	postgresPodLabelKey = "cluster-name"
+
+	postgresPodDefaultKey = "application"
+	postgresPodDefaultVal = "spilo"
 )
 
 type Postgres struct {
@@ -190,4 +199,26 @@ func (p *Postgres) CurrentStatus() string {
 	default:
 		return cloudlinuxv1.ClusterUnknownStatus
 	}
+}
+
+func (p *Postgres) GetPodReplicaSelector(cluster string) map[string]string {
+	return map[string]string{postgresRoleKey: postgresRoleReplica,
+		postgresPodLabelKey:   cluster,
+		postgresPodDefaultKey: postgresPodDefaultVal,
+	}
+}
+
+func (p *Postgres) GetPodMasterSelector(cluster string) map[string]string {
+	return map[string]string{postgresRoleKey: postgresRoleMaster,
+		postgresPodLabelKey:   cluster,
+		postgresPodDefaultKey: postgresPodDefaultVal,
+	}
+}
+
+func (p *Postgres) GetMasterService(cluster, namespace string) string {
+	return fmt.Sprintf("%s.%s", cluster, namespace)
+}
+
+func (p *Postgres) GetReplicaService(cluster, namespace string) string {
+	return fmt.Sprintf("%s-repl.%s", cluster, namespace)
 }

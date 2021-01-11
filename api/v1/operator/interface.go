@@ -21,6 +21,12 @@ type Operator interface {
 	IsEqual(cm *cloudlinuxv1.CloudManaged) bool
 	CurrentStatus() string
 	GetDefaults() cloudlinuxv1.Defaults
+
+	GetPodReplicaSelector(string) map[string]string
+	GetPodMasterSelector(string) map[string]string
+
+	GetMasterService(string, string) string
+	GetReplicaService(string, string) string
 }
 
 type Backup interface {
