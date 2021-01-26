@@ -36,8 +36,8 @@ func init() {
 }
 
 var envRequired = []string{
-	"IMAGE_REPO",
-	"IMAGE_PULL_SECRET",
+	"IMG_REPO",
+	"IMG_PULL_SECRET",
 }
 
 func checkEnv() error {
@@ -52,6 +52,10 @@ func checkEnv() error {
 }
 
 func main() {
+	Main(os.Args[1:])
+}
+
+func Main(args []string) {
 	var metricsAddr string
 	var enableLeaderElection bool
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
