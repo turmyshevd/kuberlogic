@@ -4,10 +4,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/go-logr/logr"
 	mysql "github.com/presslabs/mysql-operator/pkg/apis"
 	redis "github.com/spotahome/redis-operator/api/redisfailover/v1"
 	postgres "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
 	cloudlinuxv1 "gitlab.com/cloudmanaged/operator/api/v1"
+	"gitlab.com/cloudmanaged/operator/api/v1/operator/util"
 	"gitlab.com/cloudmanaged/operator/controllers"
 	"gitlab.com/cloudmanaged/operator/monitoring"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,23 +36,21 @@ func init() {
 }
 
 var envRequired = []string{
-	"IMG_REPO",
-	"IMG_PULL_SECRET",
+	util.EnvImgRepo,
+	util.EnvImgPullSecret,
 }
 
-func checkEnv() error {
+func checkEnv(log logr.Logger) error {
 	for _, envVariable := range envRequired {
 		if value := os.Getenv(envVariable); value == "" {
 			return errors.New(fmt.Sprintf(
 				"required env variable is undefined: %s", envVariable,
 			))
+		} else {
+			log.Info(fmt.Sprintf("%s: %s", envVariable, value))
 		}
 	}
 	return nil
-}
-
-func main() {
-	Main(os.Args[1:])
 }
 
 func Main(args []string) {
@@ -64,7 +64,7 @@ func Main(args []string) {
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	if err := checkEnv(); err != nil {
+	if err := checkEnv(setupLog); err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
