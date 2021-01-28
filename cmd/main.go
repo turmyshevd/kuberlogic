@@ -11,13 +11,13 @@ import (
 	cloudlinuxv1 "gitlab.com/cloudmanaged/operator/api/v1"
 	"gitlab.com/cloudmanaged/operator/api/v1/operator/util"
 	"gitlab.com/cloudmanaged/operator/controllers"
+	"gitlab.com/cloudmanaged/operator/logging"
 	"gitlab.com/cloudmanaged/operator/monitoring"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
@@ -62,8 +62,7 @@ func Main(args []string) {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
-
+	ctrl.SetLogger(logging.CreateLogger())
 	if err := checkEnv(setupLog); err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
