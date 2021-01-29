@@ -98,18 +98,12 @@ func (session *Session) SetReplicas(client *kubernetes.Clientset) error {
 }
 
 func (session *Session) SetCredentials(client *kubernetes.Clientset) error {
-	secrets, err := client.CoreV1().Secrets(session.ClusterNamespace).
-		List(context.TODO(), metav1.ListOptions{})
+	secret, err := client.CoreV1().Secrets(session.ClusterNamespace).Get(context.TODO(), session.ClusterCredentialsSecret, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	for _, secret := range secrets.Items {
-		if secret.Name == fmt.Sprintf(session.ClusterCredentialsSecret) {
-			session.Password = string(secret.Data["password"])
-			session.Username = string(secret.Data["username"])
-			break
-		}
-	}
+	session.Password = string(secret.Data["password"])
+	session.Username = string(secret.Data["username"])
 	return nil
 }
 
