@@ -32,8 +32,10 @@ func NewEventMeta(meta *v1.ObjectMeta) (*Event, bool) {
 	return ev, err == nil
 }
 
-func RegisterEventMeta(meta v1.ObjectMeta, e *Event) {
+func RegisterEventMeta(meta v1.ObjectMeta, e *Event) v1.ObjectMeta {
 	meta.Annotations[eventNameField] = e.Name
 	meta.Annotations[eventValueField] = e.Value
 	meta.Annotations[eventTypeField] = e.Type
+
+	return meta
 }
