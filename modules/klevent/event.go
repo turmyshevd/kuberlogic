@@ -39,3 +39,14 @@ func RegisterEventMeta(meta v1.ObjectMeta, e *Event) v1.ObjectMeta {
 
 	return meta
 }
+
+func DeleteEventMeta(meta v1.ObjectMeta, name string) (v1.ObjectMeta, error) {
+	if meta.Annotations[eventNameField] != name {
+		return meta, fmt.Errorf("event not found")
+	}
+	delete(meta.Annotations, eventNameField)
+	delete(meta.Annotations, eventTypeField)
+	delete(meta.Annotations, eventValueField)
+
+	return meta, nil
+}
