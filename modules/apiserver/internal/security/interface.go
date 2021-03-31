@@ -13,8 +13,6 @@ type AuthProvider interface {
 	GetAuthenticationSecret(username, password string) (string, error) // returns secret, error
 	Authenticate(secret string) (string, string, error)                // returns username, secret, error
 	Authorize(username, action, object string) (bool, error)           // return authorization success, error
-	CreatePermissionResource(obj string) error
-	DeletePermissionResource(obj string) error
 }
 
 func NewAuthProvider(c *config.Config, cache cache.Cache, log logging.Logger) (AuthProvider, error) {
@@ -30,8 +28,7 @@ func NewAuthProvider(c *config.Config, cache cache.Cache, log logging.Logger) (A
 			c.Auth.Keycloak.RealmName,
 			c.Auth.Keycloak.Url,
 			cache,
-			log,
-			ServiceGrants)
+			log)
 	case "none":
 		p, e = none.NewNoneProvider()
 	default:
