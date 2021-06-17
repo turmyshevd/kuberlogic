@@ -264,7 +264,7 @@ func makeTestFailover(tf tFailover) func(t *testing.T) {
 			tf.service.Create,
 			tf.service.WaitForStatus("Ready", 5, 5*60),
 
-			tf.service.EditReplicas, // increase replicas to 2
+			tf.service.UpgradeReplicas, // increase replicas to 2
 			tf.service.WaitForStatus("Ready", 5, 5*60),
 
 			// wait replica pod

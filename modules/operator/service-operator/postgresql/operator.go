@@ -19,6 +19,11 @@ const (
 	teamId = "kuberlogic"
 )
 
+var podAnnotations = map[string]string{
+	"monitoring.cloudlinux.com/scrape": "true",
+	"monitoring.cloudlinux.com/port":   "9187",
+}
+
 type Postgres struct {
 	Operator postgresv1.Postgresql
 }
@@ -106,10 +111,7 @@ func (p *Postgres) Init(kls *kuberlogicv1.KuberLogicService) {
 				MaximumLagOnFailover: 33554432,
 				Slots:                map[string]map[string]string{},
 			},
-			PodAnnotations: map[string]string{
-				"monitoring.cloudlinux.com/scrape": "true",
-				"monitoring.cloudlinux.com/port":   "9187",
-			},
+			PodAnnotations: podAnnotations,
 			Sidecars: []postgresv1.Sidecar{
 				{
 					Name:        "postgres-exporter",
@@ -161,6 +163,13 @@ func (p *Postgres) Update(kls *kuberlogicv1.KuberLogicService) {
 	p.setVolumeSize(kls)
 	p.setVersion(kls)
 	p.setAdvancedConf(kls)
+
+	// TODO: add link to github issue
+	if p.IsUpdateFailed() && !p.IsMarkedPodAnnotation() {
+		p.MarkPodAnnotations()
+	} else {
+		p.UnmarkPodAnnotations()
+	}
 }
 
 func (p *Postgres) setReplica(kls *kuberlogicv1.KuberLogicService) {
@@ -244,6 +253,34 @@ func (p *Postgres) IsReady() (bool, string) {
 	default:
 		return false, kuberlogicv1.ClusterUnknownStatus
 	}
+}
+
+func (p *Postgres) IsUpdateFailed() bool {
+	switch p.Operator.Status.PostgresClusterStatus {
+	case postgresv1.ClusterStatusUpdateFailed, postgresv1.ClusterStatusSyncFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+func (p *Postgres) MarkPodAnnotations() {
+	fmt.Println("====================")
+	fmt.Println("add annotation")
+	p.Operator.Spec.PodAnnotations["kuberlogic/fix"] = "true"
+}
+
+func (p *Postgres) UnmarkPodAnnotations() {
+	fmt.Println("====================")
+	fmt.Println("remove annotation")
+	delete(p.Operator.Spec.PodAnnotations, "kuberlogic/fix")
+}
+
+func (p *Postgres) IsMarkedPodAnnotation() bool {
+	if p.Operator.Spec.PodAnnotations["kuberlogic/fix"] == "true" {
+		return true
+	}
+	return false
 }
 
 func genUserCredentialsSecretName(user, cluster string) string {

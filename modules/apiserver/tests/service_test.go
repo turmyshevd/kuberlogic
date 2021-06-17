@@ -6,7 +6,6 @@ import (
 	"github.com/prometheus/common/log"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 )
@@ -205,7 +204,7 @@ func (s *tService) TryDecreaseVolumeSize(t *testing.T) {
 	api.responseShouldMatchJson(`{"message": "error updating service"}`)
 }
 
-func (s *tService) EditReplicas(t *testing.T) {
+func (s *tService) UpgradeReplicas(t *testing.T) {
 	api := newApi(t)
 	api.setBearerToken()
 	api.setJsonRequestBody(
@@ -219,6 +218,24 @@ func (s *tService) EditReplicas(t *testing.T) {
 	api.responseCodeShouldBe(200)
 	api.encodeResponseToJson()
 	api.fieldIs("replicas", s.newReplicas)
+}
+
+func (s *tService) UpgradeReplicasAndUpgradeLimits(t *testing.T) {
+	api := newApi(t)
+	api.setBearerToken()
+	api.setJsonRequestBody(
+		map[string]interface{}{
+			"name":     s.name,
+			"ns":       s.ns,
+			"type":     s.type_,
+			"replicas": s.newReplicas,
+			"limits":   s.newLimits,
+		})
+	api.sendRequestTo(http.MethodPut, fmt.Sprintf("/services/%s:%s/", s.ns, s.name))
+	api.responseCodeShouldBe(200)
+	api.encodeResponseToJson()
+	api.fieldIs("replicas", s.newReplicas)
+	api.fieldIs("limits", s.newLimits)
 }
 
 func (s *tService) TryEditType(t *testing.T) {
@@ -298,9 +315,9 @@ func (s *tService) EditBackLimitsAndIncreaseAdvancedConf(t *testing.T) {
 }
 
 func (s *tService) DowngradeReplicasAndIncreaseAdvancedConf(t *testing.T) {
-	if strings.Contains(t.Name(), pgService.type_) {
-		t.Skip("Postgresql fails on this. Skipping.")
-	}
+	//if strings.Contains(t.Name(), pgService.type_) {
+	//	t.Skip("Postgresql fails on this. Skipping.")
+	//}
 
 	api := newApi(t)
 	api.setBearerToken()
@@ -515,7 +532,7 @@ func makeTestService(ts tService) func(t *testing.T) {
 			ts.WaitForStatus("Ready", 5, 5*60),
 			ts.CheckField("advancedConf", ts.conf),
 
-			ts.EditReplicas,
+			ts.UpgradeReplicas,
 			ts.WaitForStatus("Ready", 5, 5*60),
 			ts.CheckField("replicas", ts.newReplicas),
 
@@ -532,9 +549,36 @@ func makeTestService(ts tService) func(t *testing.T) {
 	}
 }
 
+func makeTestScalingService(ts tService) func(t *testing.T) {
+	return func(t *testing.T) {
+		steps := []func(t *testing.T){
+			ts.Create,
+			ts.WaitForStatus("Ready", 5, 5*60),
+
+			ts.UpgradeReplicasAndUpgradeLimits,
+			ts.WaitForStatus("Ready", 5, 5*60),
+
+			ts.DowngradeReplicasAndIncreaseAdvancedConf, // fails in case the postgresql
+			ts.WaitForStatus("Ready", 5, 5*60),
+
+			ts.Delete,
+		}
+
+		for _, item := range steps {
+			t.Run(GetFunctionName(item), item)
+		}
+	}
+}
+
 func TestService(t *testing.T) {
 	for _, svc := range []tService{pgTestService, mysqlTestService} {
 		t.Run(svc.type_, makeTestService(svc))
+	}
+}
+
+func TestScalingService(t *testing.T) {
+	for _, svc := range []tService{pgTestService, mysqlTestService} {
+		t.Run(svc.type_, makeTestScalingService(svc))
 	}
 }
 
