@@ -138,6 +138,11 @@ func (p *Mysql) Update(cm *kuberlogicv1.KuberLogicService) {
 	p.setAdvancedConf(cm)
 }
 
+func (p *Mysql) Fixup(cm *kuberlogicv1.KuberLogicService) bool {
+	// nothing to fix
+	return false
+}
+
 func (p *Mysql) setReplica(kls *kuberlogicv1.KuberLogicService) {
 	p.Operator.Spec.Replicas = &kls.Spec.Replicas
 }

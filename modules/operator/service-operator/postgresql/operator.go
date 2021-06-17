@@ -163,15 +163,19 @@ func (p *Postgres) Update(kls *kuberlogicv1.KuberLogicService) {
 	p.setVolumeSize(kls)
 	p.setVersion(kls)
 	p.setAdvancedConf(kls)
+}
 
+func (p *Postgres) Fixup(kls *kuberlogicv1.KuberLogicService) bool {
 	// TODO: add link to github issue
 	fmt.Println("==============")
 	fmt.Println("cluster status", p.Operator.Status.PostgresClusterStatus)
 	fmt.Println("is marked pod annotation", p.IsMarkedPodAnnotation())
 	if p.IsUpdateFailed() && !p.IsMarkedPodAnnotation() {
 		p.MarkPodAnnotations()
+		return true
 	} else {
 		p.UnmarkPodAnnotations()
+		return false
 	}
 }
 

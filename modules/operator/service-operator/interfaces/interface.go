@@ -16,6 +16,7 @@ type OperatorInterface interface {
 	Init(cm *v1.KuberLogicService)
 	InitFrom(o runtime.Object)
 	Update(cm *v1.KuberLogicService)
+	Fixup(cm *v1.KuberLogicService) bool
 	AsRuntimeObject() runtime.Object
 	AsMetaObject() metav1.Object
 	AsClientObject() client.Object
