@@ -14,10 +14,10 @@ require (
 	github.com/presslabs/mysql-operator v0.5.0-rc.2
 	github.com/prometheus/client_golang v1.7.1
 	github.com/vrischmann/envconfig v1.3.0
-	github.com/zalando/postgres-operator v1.6.2
+	github.com/zalando/postgres-operator v1.6.3
 	go.uber.org/zap v1.16.0
-	k8s.io/api v0.20.4
-	k8s.io/apimachinery v0.20.4
-	k8s.io/client-go v0.20.4
+	k8s.io/api v0.20.6
+	k8s.io/apimachinery v0.20.6
+	k8s.io/client-go v0.20.6
 	sigs.k8s.io/controller-runtime v0.8.3
 )
