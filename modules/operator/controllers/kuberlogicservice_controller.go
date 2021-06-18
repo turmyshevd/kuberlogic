@@ -156,14 +156,14 @@ func (r *KuberLogicServiceReconciler) update(ctx context.Context, kls *kuberlogi
 		log.Error(err, "error updating status")
 		return ctrl.Result{}, err
 	}
-	if op.Fixup(kls) {
-		if err := r.Update(ctx, op.AsClientObject()); err != nil {
-			log.Error(err, "Failed to update object", "BaseOperator", kls.Spec.Type)
-			return ctrl.Result{}, err
-		}
-		log.Info("Cluster is fixed", "BaseOperator", kls.Spec.Type)
-		return ctrl.Result{}, nil
-	}
+	//if op.Fixup(kls) {
+	//	if err := r.Update(ctx, op.AsClientObject()); err != nil {
+	//		log.Error(err, "Failed to update object", "BaseOperator", kls.Spec.Type)
+	//		return ctrl.Result{}, err
+	//	}
+	//	log.Info("Cluster is fixed", "BaseOperator", kls.Spec.Type)
+	//	return ctrl.Result{}, nil
+	//}
 
 	if !kls.ReconciliationAllowed() {
 		log.Info("updates are not allowed in current service state")
