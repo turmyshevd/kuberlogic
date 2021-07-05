@@ -554,9 +554,12 @@ func makeTestScalingService(ts tService) func(t *testing.T) {
 		steps := []func(t *testing.T){
 			ts.Create,
 			ts.WaitForStatus("Ready", 5, 5*60),
+			ts.WaitForRole("master", "Running", 5, 3*60),
 
 			ts.UpgradeReplicasAndUpgradeLimits,
 			ts.WaitForStatus("Ready", 5, 5*60),
+			ts.WaitForRole("master", "Running", 5, 3*60),
+			ts.WaitForRole("replica", "Running", 5, 3*60),
 
 			ts.DowngradeReplicasAndIncreaseAdvancedConf, // fails in case the postgresql
 			ts.WaitForStatus("Ready", 5, 5*60),
