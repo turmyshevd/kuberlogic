@@ -50,7 +50,7 @@ func (session *Session) GetUser() interfaces.User {
 
 func (session *Session) SetMaster(client *kubernetes.Clientset) error {
 	pods, err := session.GetPods(client, client2.MatchingLabels{
-		"application":  "spilo",
+		"application":  "db-connection-pooler", // using pgbouncer connection
 		"cluster-name": session.ClusterName,
 		"spilo-role":   "master",
 	})
@@ -71,7 +71,7 @@ func (session *Session) SetMaster(client *kubernetes.Clientset) error {
 
 func (session *Session) SetReplicas(client *kubernetes.Clientset) error {
 	pods, err := session.GetPods(client, client2.MatchingLabels{
-		"application":  "spilo",
+		"application":  "db-connection-pooler", // using pgbouncer connection
 		"cluster-name": session.ClusterName,
 		"spilo-role":   "replica",
 	})

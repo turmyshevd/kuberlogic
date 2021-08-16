@@ -67,6 +67,8 @@ func (p *Postgres) InitFrom(o runtime.Object) {
 
 func (p *Postgres) Init(kls *kuberlogicv1.KuberLogicService) {
 	loadBalancersEnabled := true
+	connectionPoolerEnabled := true
+	var connectionPoolerNumberOfInstances int32 = 1
 
 	name := p.Name(kls)
 	defaultUserCredentialsSecret := genUserCredentialsSecretName(teamId, name)
@@ -77,9 +79,25 @@ func (p *Postgres) Init(kls *kuberlogicv1.KuberLogicService) {
 			Namespace: kls.Namespace,
 		},
 		Spec: postgresv1.PostgresSpec{
-			TeamID:                    teamId,
-			EnableMasterLoadBalancer:  &loadBalancersEnabled,
-			EnableReplicaLoadBalancer: &loadBalancersEnabled,
+			TeamID:                        teamId,
+			EnableMasterLoadBalancer:      &loadBalancersEnabled,
+			EnableReplicaLoadBalancer:     &loadBalancersEnabled,
+			EnableConnectionPooler:        &connectionPoolerEnabled,
+			EnableReplicaConnectionPooler: &connectionPoolerEnabled,
+			ConnectionPooler: &postgresv1.ConnectionPooler{
+				NumberOfInstances: &connectionPoolerNumberOfInstances,
+				DockerImage:       "registry.opensource.zalan.do/acid/pgbouncer:master-18",
+				Resources: postgresv1.Resources{
+					ResourceRequests: postgresv1.ResourceDescription{
+						CPU:    "500m",
+						Memory: "100Mi",
+					},
+					ResourceLimits: postgresv1.ResourceDescription{
+						CPU:    "1",
+						Memory: "100Mi",
+					},
+				},
+			},
 			Users: map[string]postgresv1.UserFlags{
 				// required user like teamId name with necessary credentials
 				teamId: {"superuser", "createdb"},
