@@ -64,42 +64,11 @@ func New(config *cfg.Config, log logger.Logger) (*HelmInstaller, error) {
 		return nil, fmt.Errorf("error building Helm cli: %v", err)
 	}
 
-	i := &HelmInstaller{
+	return &HelmInstaller{
 		Log:              log,
 		ClientSet:        k8sclientset,
 		HelmActionConfig: helmActionConfig,
 		Config:           *config,
 		ReleaseNamespace: *config.Namespace,
-
-		//ReleaseNamespace: *config.Namespace,
-		//Registry: struct {
-		//	Server   string
-		//	Username string
-		//	Password string
-		//}{
-		//	Server:   config.Registry.Server,
-		//	Username: config.Registry.Username,
-		//	Password: config.Registry.Password,
-		//},
-		//Endpoints: struct {
-		//	API               string
-		//	UI                string
-		//	MonitoringConsole string
-		//}{
-		//	API:               config.Endpoints.API,
-		//	UI:                config.Endpoints.UI,
-		//	MonitoringConsole: config.Endpoints.MonitoringConsole,
-		//},
-		//Auth: struct {
-		//	AdminPassword    string
-		//	DemoUserPassword string
-		//}{
-		//	AdminPassword: config.Auth.AdminPassword,
-		//},
-	}
-	//if config.Auth.DemoUserPassword != nil {
-	//	i.Auth.DemoUserPassword = *config.Auth.DemoUserPassword
-	//}
-
-	return i, nil
+	}, nil
 }
