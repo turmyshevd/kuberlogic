@@ -30,7 +30,6 @@ var (
 
 	defaultKubeconfigPath   = fmt.Sprintf("%s/%s", os.Getenv("HOME"), ".kube/config")
 	defaultDebugLogsEnabled = false
-	defaultHelmReleaseName  = "kuberlogic"
 )
 
 type Config struct {
@@ -40,7 +39,6 @@ type Config struct {
 	Namespace *string `yaml:"namespace"`
 
 	Endpoints struct {
-		API               string `yaml:"api""`
 		UI                string `yaml:"ui"`
 		MonitoringConsole string `yaml:"monitoringConsole"`
 	} `yaml:"endpoints"`
@@ -52,9 +50,15 @@ type Config struct {
 	} `yaml:"registry,omitempty"`
 
 	Auth struct {
-		AdminPassword    string  `yaml:"adminPassword"`
-		DemoUserPassword *string `yaml:"demoUserPassword,omitempty"`
+		AdminPassword    string `yaml:"adminPassword"`
+		DemoUserPassword string `yaml:"demoUserPassword,omitempty"`
 	} `yaml:"auth"`
+
+	TLS struct {
+		CaFile  string `yaml:"ca.crt"`
+		CrtFile string `yaml:"tls.crt"`
+		KeyFile string `yaml:"tls.key"`
+	} `yaml:"tls"`
 }
 
 func (c *Config) setDefaults(log logger.Logger) error {
@@ -76,8 +80,8 @@ func (c *Config) setDefaults(log logger.Logger) error {
 		configError = requiredParamNotSet
 	}
 
-	if c.Endpoints.UI == "" || c.Endpoints.API == "" {
-		log.Errorf("`endpoints.api` and `endpoints.ui` must be set and can't be-empty")
+	if c.Endpoints.UI == "" {
+		log.Errorf("`endpoints.ui` must be set and can't be-empty")
 		return errors.New("endpoints configuration is not set")
 	}
 

@@ -20,11 +20,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/Masterminds/semver/v3"
+	"github.com/kuberlogic/kuberlogic/modules/installer/cfg"
 	logger "github.com/kuberlogic/kuberlogic/modules/installer/log"
 	"github.com/pkg/errors"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -128,4 +131,26 @@ func checkLoadBalancerServiceType(clientset *kubernetes.Clientset, log logger.Lo
 		continue
 	}
 	return errors.New("Service with LoadBalancer didn't get ingress address")
+}
+
+func checkCustomCertificates(config cfg.Config, log logger.Logger) error {
+	if config.TLS.CaFile != "" {
+		_, err := os.ReadFile(config.TLS.CaFile)
+		if err != nil {
+			return errors.Wrap(err, "cannot read the ca.crt file")
+		}
+	}
+	if config.TLS.CrtFile != "" {
+		_, err := os.ReadFile(config.TLS.CrtFile)
+		if err != nil {
+			return errors.Wrap(err, "cannot read the tls.crt file")
+		}
+	}
+	if config.TLS.KeyFile != "" {
+		_, err := os.ReadFile(config.TLS.KeyFile)
+		if err != nil {
+			return errors.Wrap(err, "cannot read the tls.key file")
+		}
+	}
+	return nil
 }
